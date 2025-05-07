@@ -1,0 +1,366 @@
+{
+    "name": "URLyfe v2 - Article Maker",
+    "nodes": [
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "Buat sesuai perintah ya!",
+          "hasOutputParser": true,
+          "messages": {
+            "messageValues": [
+              {
+                "message": "=Kamu adalah seorang penulis blog paling handal sedunia!\n\nKamu bertugas untuk menulis di sebuah blog bernama URLyfe. Kamu bertugas untuk menentukan salah satu topik dari kategori yang tersedia di URLyfe, lalu membuat judul artikel yang menarik dan relevan di masa sekarang, yaitu tanggal {{ $now.format('yyyy-MM-dd') }}.\n\nJadi output dari kamu adalah nama kategori dan judul artikelnya.\n\nKategori yang diizinkan adalah. PASTIKAN KAMU MEMILIH SALAH SATU CATEGORY SECARA ACAK, JANGAN AMBIL YANG PALING ATAS SAJA :\n\n- Artificial Intelligence (AI)\n- Ekonomi\n- Hiburan\n- Olahraga\n- Sosial\n- Teknologi\n\nPastikan output nama kategori sama persis, termasuk huruf besar kecilnya!\n\n### PENTING ###\n- Jangan buat artikel yang sifatnya berita,\n- Lebih buat artikel yang berjenis sharing tips dan trik saja,"
+              }
+            ]
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.6,
+        "position": [
+          -200,
+          320
+        ],
+        "id": "07c30574-081b-4841-937a-af59424c93b6",
+        "name": "Topic Chooser and Title Maker"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Judul artikel : {{ $json.output.title }}. Kategori : {{ $json.output.category }}",
+          "messages": {
+            "messageValues": [
+              {
+                "message": "=Kamu adalah seorang penulis blog paling handal sedunia!\n\nKamu bertugas untuk menulis di sebuah blog bernama URLyfe. Kamu bertugas untuk membuat artikel yang SEO friendly berdasarkan judul dan topik yang sudah disediakan oleh pengguna.\n\n### PENTING ###\n- Jangan buat artikel yang sifatnya berita,\n- Lebih buat artikel yang berjenis sharing tips dan trik saja,\n- Minimal artikel terdiri dari 1000 kata,\n- Artikel akan diposting langsung ke Wordpress, jadi pastikan formatting nya sesuai dengan formatting wordpress dan jangan tambahkan imbuhan apapun selain isi artikelnya, karena tidak akan dicek dulu\n- Outputnya jangan markdown! Tapi dalam format artikel Wordpress!"
+              }
+            ]
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.6,
+        "position": [
+          240,
+          320
+        ],
+        "id": "f09f23fd-9d59-4331-94bf-375c33b57593",
+        "name": "Basic LLM Chain"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4.1-mini"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          -100,
+          600
+        ],
+        "id": "07e921c0-c358-441b-bca4-21607dcb3508",
+        "name": "Article Maker Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "<YOUR_CREDENTIAL_ID>",
+            "name": "<YOUR_CREDENTIAL_NAME>"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1",
+            "mode": "list",
+            "cachedResultName": "gpt-4.1"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          -460,
+          580
+        ],
+        "id": "0f3f9629-0822-45f4-b4b8-689527e7e58d",
+        "name": "Topic Chooser and Title Maker Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "<YOUR_CREDENTIAL_ID>",
+            "name": "<YOUR_CREDENTIAL_NAME>"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\n\t\"category\": \"Hiburan\",\n\t\"title\": \"Judul artikel\"\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.2,
+        "position": [
+          -280,
+          580
+        ],
+        "id": "185d2277-67ac-4f9a-b78a-09b210d20347",
+        "name": "Topic Chooser and Title Maker Parser"
+      },
+      {
+        "parameters": {
+          "title": "={{ $('Topic Chooser and Title Maker').item.json.output.title }}",
+          "additionalFields": {
+            "authorId": 1,
+            "content": "={{ $json.text }}",
+            "status": "publish",
+            "format": "standard",
+            "categories": "={{$('Topic Chooser and Title Maker').item.json.output.category == \"Artificial Intelligence (AI)\" ? 2 : \n  $('Topic Chooser and Title Maker').item.json.output.category == \"Sosial\" ? 3 : \n  $('Topic Chooser and Title Maker').item.json.output.category == \"Hiburan\" ? 4 : \n  $('Topic Chooser and Title Maker').item.json.output.category == \"Olahraga\" ? 5 :\n$('Topic Chooser and Title Maker').item.json.output.category == \"Teknologi\" ? 1 :\n  $('Topic Chooser and Title Maker').item.json.output.category == \"Ekonomi\" ? 6 : \n  null}}"
+          }
+        },
+        "type": "n8n-nodes-base.wordpress",
+        "typeVersion": 1,
+        "position": [
+          620,
+          320
+        ],
+        "id": "fe189309-3ed4-42bc-9df5-a713fb2cce81",
+        "name": "Wordpress Post Draft",
+        "credentials": {
+          "wordpressApi": {
+            "id": "<YOUR_CREDENTIAL_ID>",
+            "name": "<YOUR_CREDENTIAL_NAME>"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "image",
+          "prompt": "=Buat gambar untuk artikel blog berjudul \"{{ $json.title.raw }}\". Buat yang realistis dan jangan terlalu berfantasi terlalu tinggi.\n\nJangan ada teks sama sekali di gambarnya!",
+          "options": {
+            "quality": "standard",
+            "size": "1024x1024",
+            "style": "vivid"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 1.8,
+        "position": [
+          100,
+          580
+        ],
+        "id": "ab100cf3-d2ca-4b1a-b422-d047cfe81fd4",
+        "name": "OpenAI - Generate Image",
+        "credentials": {
+          "openAiApi": {
+            "id": "<YOUR_CREDENTIAL_ID>",
+            "name": "<YOUR_CREDENTIAL_NAME>"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://<blog-url>/wp-json/wp/v2/media",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "wordpressApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "image/png"
+              },
+              {
+                "name": "Content-Disposition",
+                "value": "=attachment; filename={{$now.toMillis()}}.{{ $json.fileExtension }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "binaryData",
+          "inputDataFieldName": "data",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          360,
+          580
+        ],
+        "id": "d8c24397-17ab-46b3-a7dd-48bd6377f65b",
+        "name": "Upload Image to WP",
+        "credentials": {
+          "wordpressApi": {
+            "id": "<YOUR_CREDENTIAL_ID>",
+            "name": "<YOUR_CREDENTIAL_NAME>"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://<blog-url>/wp-json/wp/v2/posts/{{ $('Wordpress Post Draft').item.json.id }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "wordpressApi",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "featured_media",
+                "value": "={{ $json.id }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          620,
+          580
+        ],
+        "id": "870e2dfe-e151-4385-ad5f-68312837a04a",
+        "name": "Wordpress - Set Featured Image",
+        "credentials": {
+          "wordpressApi": {
+            "id": "<YOUR_CREDENTIAL_ID>",
+            "name": "<YOUR_CREDENTIAL_NAME>"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 3
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -440,
+          320
+        ],
+        "id": "c46e124e-f37c-4c9d-b6f3-4264e46d4dc9",
+        "name": "Schedule Trigger"
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "Topic Chooser and Title Maker": {
+        "main": [
+          [
+            {
+              "node": "Basic LLM Chain",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Article Maker Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Basic LLM Chain",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Topic Chooser and Title Maker Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Topic Chooser and Title Maker",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Topic Chooser and Title Maker Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "Topic Chooser and Title Maker",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Basic LLM Chain": {
+        "main": [
+          [
+            {
+              "node": "Wordpress Post Draft",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wordpress Post Draft": {
+        "main": [
+          [
+            {
+              "node": "OpenAI - Generate Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI - Generate Image": {
+        "main": [
+          [
+            {
+              "node": "Upload Image to WP",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload Image to WP": {
+        "main": [
+          [
+            {
+              "node": "Wordpress - Set Featured Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Topic Chooser and Title Maker",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": true,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "9b398004-0047-4d2c-85bf-e8f54adb832e",
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "fa52a98dd39f67760c7540fff8a0dd5306d89f766551eb7a7c84b5f43eb33d4c"
+    },
+    "id": "kSpV7znkD2XELW6Z",
+    "tags": []
+  }
