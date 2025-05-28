@@ -1,0 +1,318 @@
+{
+    "name": "AI Accounting Staff",
+    "nodes": [
+      {
+        "parameters": {
+          "toolDescription": "Get available accounts on ERPNext",
+          "url": "https://erpnexturl.com/api/resource/Account?filters=[[\"company\", \"=\", \"Company Name\"]]&fields=[\"name\", \"is_group\", \"root_type\"]&limit_page_length=1000",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBasicAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          300,
+          220
+        ],
+        "id": "c8ddcc5e-fa74-4c10-8e8f-911aa6fdf85e",
+        "name": "GetAvailableAccounts",
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "Uzw4EeAzIIQH5JtY",
+            "name": "ERPNext - erpnexturl.com"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4.1-mini"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          120,
+          220
+        ],
+        "id": "0b8b8dfe-b432-48fd-9d09-50417e610b3a",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "hv8gIsU1smdB2KAz",
+            "name": "OpenAi account - Aji Prakoso"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\n    \"journals\": {\n        \"title\": \"<journal-title>\",\n        \"docstatus\": \"1\",\n        \"posting_date\": \"<current date in format 2025-05-28 00:00:00>\",\n        \"root_type\": \"Journal Entry\",\n        \"company\": \"Jipraks Digital Indonesia\",\n        \"total_debit\": \"<total debit in format : 100000.0>\",\n        \"total_credit\": \"<total credit in format : 100000.0>\",\n        \"user_remark\": \"<keterangan-transaksi>\",\n        \"accounts\": [\n            {\n                \"account\": \"1111.001 - Kas Kecil - JDI\",\n                \"against_account\": \"5130.005 - Biaya Alat Tulis Kantor - JDI\",\n                \"debit_in_account_currency\": 0,\n                \"debit\": 0,\n                \"credit_in_account_currency\": 100000,\n                \"credit\": 100000,\n                \"doctype\": \"Journal Entry Account\"\n            },\n            {\n                \"account\": \"5130.005 - Biaya Alat Tulis Kantor - JDI\",\n                \"against_account\": \"1111.001 - Kas Kecil - JDI\",\n                \"debit_in_account_currency\": 100000,\n                \"debit\": 100000,\n                \"credit_in_account_currency\": 0,\n                \"credit\": 0,\n                \"doctype\": \"Journal Entry Account\"\n            }\n        ]\n    },\n    \"info\": \"Dari keterangan dan nominal yang Anda berikan, saya akan membuat jurnal dengan detail : <detail-jurnal>\"\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.2,
+        "position": [
+          500,
+          220
+        ],
+        "id": "a342df9f-9aac-4ff9-b231-4995f13de893",
+        "name": "Structured Output Parser"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Keterangan Transaksi : {{ $json.query.remark }}\nNominal (Rupiah) : {{ $json.query.amount }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "=# System Prompt untuk AI Agent Jurnal ERPNext\n\nSekarang adalah tanggal {{ $now.format('yyyy-MM-dd HH:mm:ss') }}\n\nAnda adalah seorang staf akunting profesional dengan pengalaman lebih dari 10 tahun di ERPNext.  \nTugas Anda adalah memetakan setiap transaksi user ke dalam jurnal yang **seimbang** (debit = credit) dengan memilih akun CoA yang benar.\n\n---\n\n## 1. Ambil daftar CoA\n- Panggil tool:\n  ```text\n  GetAvailableAccounts()\n  ```\n- Tool akan mengembalikan array objek akun:\n  - `name` (string)  \n  - `is_group` (0 = leaf account, 1 = group header)  \n  - `root_type` (Asset, Liability, Equity, Income, Expense)  \n\n## 2. Aturan Pemilihan Akun\n- **Hanya** pilih akun dengan `is_group = 0`.  \n- Map `root_type` ke sisi jurnal:  \n  - **Asset** & **Expense** → Debit (bertambah) / Credit (berkurang)  \n  - **Liability**, **Equity** & **Income** → Credit (bertambah) / Debit (berkurang)  \n- Pilih akun `name` yang paling relevan dengan deskripsi transaksi (keyword match).\n\n## 3. Proses Penentuan\n1. Baca deskripsi transaksi user (pembayaran, penerimaan, beban, penjualan, dll).  \n2. Identifikasi jumlah dan sisi (Debit/Credit) untuk akun yang sesuai.  \n3. Jika ada lebih dari satu akun leaf cocok, ajukan pertanyaan klarifikasi ke user.\n\n## 4. Output Format\nKembalikan **hanya** JSON dengan struktur berikut:\n```json\n{\n  \"journals\": {\n    \"title\": \"<journal-title>\",\n    \"docstatus\": \"1\",\n    \"posting_date\": \"<current date in format 2025-05-28 00:00:00>\",\n    \"root_type\": \"Journal Entry\",\n    \"company\": \"Jipraks Digital Indonesia\",\n    \"total_debit\": \"<total debit in format : 100000.0>\",\n    \"total_credit\": \"<total credit in format : 100000.0>\",\n    \"user_remark\": \"<keterangan-transaksi>\",\n    \"accounts\": [\n      {\n        \"account\": \"<CoA name>\",\n        \"against_account\": \"<CoA name>\",\n        \"debit_in_account_currency\": 0.0,\n        \"debit\": 0.0,\n        \"credit_in_account_currency\": 100000.0,\n        \"credit\": 100000.0,\n        \"doctype\": \"Journal Entry Account\"\n      },\n      {\n        \"account\": \"<CoA name>\",\n        \"against_account\": \"<CoA name>\",\n        \"debit_in_account_currency\": 100000.0,\n        \"debit\": 100000.0,\n        \"credit_in_account_currency\": 0.0,\n        \"credit\": 0.0,\n        \"doctype\": \"Journal Entry Account\"\n      }\n    ]\n  },\n  \"info\": \"Dari keterangan dan nominal yang Anda berikan, saya akan membuat jurnal dengan detail : <detail-jurnal>\"\n}\n```\n- `journals` berisi objek lengkap siap dikirim ke ERPNext.  \n- `accounts` adalah array dengan detail akun debit dan credit, termasuk `against_account`.  \n- `info` adalah satu kalimat ringkasan alasan pemilihan akun dan detail jumlah.\n\n## 5. Contoh\nTransaksi: “Tukar USD 500.000 ke Kas Besar”  \n```json\n{\n  \"journals\": {\n    \"title\": \"Tukar USD ke Kas Besar\",\n    \"docstatus\": \"1\",\n    \"posting_date\": \"2025-05-28 09:00:00\",\n    \"root_type\": \"Journal Entry\",\n    \"company\": \"Jipraks Digital Indonesia\",\n    \"total_debit\": 500000.0,\n    \"total_credit\": 500000.0,\n    \"user_remark\": \"Tukar USD ke Kas Besar - Dibuat oleh AI\",\n    \"accounts\": [\n      {\n        \"account\": \"1112.001 - Kas USD - JDI\",\n        \"against_account\": \"1111.002 - Kas Besar - JDI\",\n        \"debit_in_account_currency\": 500000.0,\n        \"debit\": 500000.0,\n        \"credit_in_account_currency\": 0.0,\n        \"credit\": 0.0,\n        \"doctype\": \"Journal Entry Account\"\n      },\n      {\n        \"account\": \"1111.002 - Kas Besar - JDI\",\n        \"against_account\": \"1112.001 - Kas USD - JDI\",\n        \"debit_in_account_currency\": 0.0,\n        \"debit\": 0.0,\n        \"credit_in_account_currency\": 500000.0,\n        \"credit\": 500000.0,\n        \"doctype\": \"Journal Entry Account\"\n      }\n    ]\n  },\n  \"info\": \"Dari keterangan dan nominal yang Anda berikan, saya akan membuat jurnal dengan detail : Debit 1112.001 - Kas USD - JDI dan Credit 1111.002 - Kas Besar - JDI sebesar 500,000.\"\n}\n```\n\n---  \nJalankan alur ini setiap kali user mengirimkan detail transaksi baru, dan pastikan jurnal yang dihasilkan **balance** (debit = credit).  \n"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.9,
+        "position": [
+          220,
+          0
+        ],
+        "id": "482a6087-a5a7-4ca5-a691-9be8f6c682b6",
+        "name": "Accounting AI Agent"
+      },
+      {
+        "parameters": {
+          "path": "ai-accounting",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -400,
+          0
+        ],
+        "id": "7272ff1e-4d1f-4778-b900-17b6c4ae83ca",
+        "name": "Webhook",
+        "webhookId": "b37dbb61-3b0d-4e00-89ec-01fa3e03bea4"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "d2a18517-6d12-44c9-bd0c-19aaedb673c0",
+                "leftValue": "={{ $json.query.amount }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "exists",
+                  "singleValue": true
+                }
+              },
+              {
+                "id": "12516172-341e-4dd3-8544-4c2a4eccd034",
+                "leftValue": "={{ $json.query.remark }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "exists",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -180,
+          0
+        ],
+        "id": "b823d96e-ade1-4ef0-9de2-5564a5c9dad4",
+        "name": "If Parameter Complete"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "{\n  \"message\": \"Incomplete params\"\n}",
+          "options": {
+            "responseCode": 400
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.2,
+        "position": [
+          -180,
+          300
+        ],
+        "id": "ce9c4a33-c6d5-4122-b277-07ddc00214e7",
+        "name": "400 Error"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json.output }}",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.2,
+        "position": [
+          640,
+          0
+        ],
+        "id": "c12a0e1b-c3c4-4b15-9470-d36bd0b60b0c",
+        "name": "200 OK"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "ai-accounting",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -400,
+          580
+        ],
+        "id": "42b3f5ba-8e89-4c4a-9b08-33b0e3b639f0",
+        "name": "POST /ai-accounting",
+        "webhookId": "b37dbb61-3b0d-4e00-89ec-01fa3e03bea4"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://erpnexturl.com/api/resource/Journal Entry",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBasicAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.body.journals }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -180,
+          580
+        ],
+        "id": "e24f0a9c-fa31-41b1-b77d-d45fd741a58a",
+        "name": "Post Journal to ERPNext",
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "Uzw4EeAzIIQH5JtY",
+            "name": "ERPNext - erpnexturl.com"
+          }
+        }
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "GetAvailableAccounts": {
+        "ai_tool": [
+          [
+            {
+              "node": "Accounting AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Accounting AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "Accounting AI Agent",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "If Parameter Complete",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If Parameter Complete": {
+        "main": [
+          [
+            {
+              "node": "Accounting AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "400 Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Accounting AI Agent": {
+        "main": [
+          [
+            {
+              "node": "200 OK",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "POST /ai-accounting": {
+        "main": [
+          [
+            {
+              "node": "Post Journal to ERPNext",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "99b65651-28ac-4a95-9d32-96c1397711e2",
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "fa52a98dd39f67760c7540fff8a0dd5306d89f766551eb7a7c84b5f43eb33d4c"
+    },
+    "id": "w5ZbFUh5SoExM5cB",
+    "tags": []
+  }
