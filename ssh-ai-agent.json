@@ -1,0 +1,1372 @@
+{
+    "name": "SSH AI Agent - Telegram Version",
+    "nodes": [
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "66ea69df-9598-44ba-a0b6-ddf28093864b",
+                "leftValue": "={{ $json.data.approved }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1300,
+          80
+        ],
+        "id": "0443bc72-da10-4814-8300-f0683a419ee4",
+        "name": "If Approved"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Sysadmin AI Agent').item.json.output.server }}",
+                      "rightValue": "VPS-FE",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "id": "8c467ebb-5564-4399-9bdb-d844eb252264"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "7e0643e4-f707-4e93-bf96-e0cf5a516673",
+                      "leftValue": "={{ $('Sysadmin AI Agent').item.json.output.server }}",
+                      "rightValue": "VPS-BE",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "42cf33c7-cb36-42ef-8b1e-6e4b74f2a609",
+                      "leftValue": "={{ $('Sysadmin AI Agent').item.json.output.server }}",
+                      "rightValue": "VPS-PROXY",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          1820,
+          80
+        ],
+        "id": "60c689be-6497-4b8d-9591-5f7573cf2fda",
+        "name": "Switch"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('Telegram Trigger').item.json.message.from.id }}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          -260,
+          160
+        ],
+        "id": "c99169ab-b0eb-449c-ad4d-bed4bf7e4de2",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\n\t\"server\": \"VPS-DEV\",\n\t\"command\": \"sudo su\",\n    \"explanation\": \"Explanation of sudo su\",\n    \"workingDirectory\": \"/working-directory\",\n    \"type\": \"COMMAND or DISCUSSION\",\n    \"discussion\": \"Think to discuss\"\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.2,
+        "position": [
+          40,
+          160
+        ],
+        "id": "2567d0f5-dd1c-47cc-a9ad-72c61e99788b",
+        "name": "Structured Output Parser"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.output.type.toUpperCase() }}",
+                      "rightValue": "DISCUSSION",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "id": "94b10c02-0695-4460-8a3e-0d6ed327148a"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "187412fd-8918-4a28-bdeb-72afdddfa264",
+                      "leftValue": "={{ $json.output.type.toUpperCase() }}",
+                      "rightValue": "COMMAND",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          340,
+          220
+        ],
+        "id": "aa15c1e0-7e02-4694-81d5-a3f0ce2688b3",
+        "name": "COMMAND or DISCUSSION"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.1,
+        "position": [
+          2920,
+          100
+        ],
+        "id": "c72a8779-aeee-45b4-8626-c402a9565a14",
+        "name": "Merge"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.command }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "=Waktu saat ini adalah {{ $now.format('yyyy-MM-dd HH:mm:ss') }}\n\nKamu adalah seorang system administrator handal dengan pengalaman lebih dari 15 tahun yang bertugas mengelola server via SSH.  \n\nSetiap kali menerima permintaan dari user, ikuti langkah ini:\n\n1. Plan: Gunakan 'SysadminThinkTool' untuk memetakan langkah—apa yang perlu dicek, diperbarui, atau dijalankan.  \n2. Respond: Langsung keluarkan hasil dengan format JSON-like berikut (tanpa memanggil tool apa pun):\n   - 'type': '\"COMMAND\"' jika Anda akan mengeksekusi perintah, atau '\"DISCUSSION\"' jika Anda butuh klarifikasi/diskusi dulu.  \n   - 'command': string — perintah shell yang akan dijalankan (kosong jika 'type' = '\"DISCUSSION\"').  \n   - 'workingDirectory': string — direktori kerja tempat perintah dijalankan (kosong jika 'type' = '\"DISCUSSION\"').  \n   - 'server': string — identifier server (contoh: '\"VPS-DEV\"', '\"VPS-APP01\"', dst.), bukan deskripsi (“Server VPS Development”). Kosong jika 'type' = '\"DISCUSSION\"'.  \n   - 'explanation': string — ringkasan singkat fungsi perintah ini (boleh kosong jika 'type' = '\"DISCUSSION\"').  \n   - 'discussion': string — pertanyaan atau poin diskusi untuk user (isi hanya jika 'type' = '\"DISCUSSION\"').\n\n3. Daftar server yang valid:\n   - 'VPS-FE'         : Server VPS Frontend dengan IP 103.245.38.239\n   - 'VPS-BE'       : Server VPS Backend dengan IP 103.245.39.22\n   - 'VPS-PROXY'       : Server VPS Proxy dengan IP 103.16.117.102\n\n4. Gaya bahasa: santai, lugas, dan tidak kaku seperti robot.\n\n---\n\nContoh  \nSysadminThinkTool:\n\nCek status disk space\n\nKonfirmasi direktori backup\n\nResponse:\n{\n\"type\": \"DISCUSSION\",\n\"command\": \"\",\n\"workingDirectory\": \"\",\n\"server\": \"\",\n\"explanation\": \"\",\n\"discussion\": \"Apakah Anda ingin menjalankan backup di /var/backups sekarang atau menunggu setelah jam sibuk?\"\n}"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.9,
+        "position": [
+          -280,
+          -80
+        ],
+        "id": "c95eb346-cee0-455f-bc1c-ce373ddd884b",
+        "name": "Sysadmin AI Agent",
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1",
+            "mode": "list",
+            "cachedResultName": "gpt-4.1"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          -400,
+          160
+        ],
+        "id": "010807a9-2977-4434-b34c-fa0e97125f0c",
+        "name": "Sysadmin Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "KJPhnHT5PPdHb1Bl",
+            "name": "OpenAI - Aji Prakoso"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "audio",
+          "operation": "transcribe",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 1.8,
+        "position": [
+          -1400,
+          -260
+        ],
+        "id": "27d20adf-ff28-4513-b15a-4f1c7aa074f0",
+        "name": "OpenAI",
+        "credentials": {
+          "openAiApi": {
+            "id": "KJPhnHT5PPdHb1Bl",
+            "name": "OpenAI - Aji Prakoso"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "599a59ba-4f43-4a1b-93c7-e8addf1ce1c6",
+                "name": "command",
+                "value": "={{ $json.text }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -1100,
+          -260
+        ],
+        "id": "3c1081ad-4078-4cfa-bcb3-2d6e96d99535",
+        "name": "Audio Mapper"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.1,
+        "position": [
+          -700,
+          -80
+        ],
+        "id": "f3ab088d-a21e-4f98-b90a-6b8b4ae8e5fc",
+        "name": "Data Merge"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "0c9881a1-6a51-40fa-8327-c1b142e706c1",
+                "name": "command",
+                "value": "={{ $json.message.text }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -1100,
+          20
+        ],
+        "id": "2e600bb3-6a6e-4b0e-95f7-813548bf6de8",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {
+          "content": "## Inbound Chat Receiver",
+          "height": 240,
+          "width": 360,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          -2920,
+          -180
+        ],
+        "typeVersion": 1,
+        "id": "1fbaa528-b60e-4b78-a9ac-8997e6c1c4aa",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## Message Type Switcher\nAudio or Text",
+          "height": 240,
+          "width": 360,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          -2160,
+          -300
+        ],
+        "typeVersion": 1,
+        "id": "f1e407bc-5880-4e36-85c5-7523558c80f8",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "## Audio Chat Processor - Transcribe using OpenAI Speech-to-Text",
+          "height": 300,
+          "width": 920,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          -1780,
+          -360
+        ],
+        "typeVersion": 1,
+        "id": "0bba8e6d-48cf-45b5-a306-b368fb84b851",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "content": "## Text Chat Processor",
+          "height": 300,
+          "width": 920,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          -1780,
+          -40
+        ],
+        "typeVersion": 1,
+        "id": "6e7207c2-d85d-432c-9877-2a925d16b1b7",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "content": "## Merge the Data to Text",
+          "height": 240,
+          "width": 360,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          -820,
+          -160
+        ],
+        "typeVersion": 1,
+        "id": "a86b0034-6c0d-40fc-a973-59b3d7a1f8de",
+        "name": "Sticky Note4"
+      },
+      {
+        "parameters": {
+          "content": "## Sysadmin AI Agent 🧠 ",
+          "height": 480,
+          "width": 600,
+          "color": 3
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          -440,
+          -160
+        ],
+        "typeVersion": 1,
+        "id": "4513fe3c-8789-4342-b46a-564e967f78fd",
+        "name": "Sticky Note5"
+      },
+      {
+        "parameters": {
+          "content": "## Command or Discussion ?",
+          "height": 300,
+          "width": 420,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          180,
+          120
+        ],
+        "typeVersion": 1,
+        "id": "a4487742-e9be-41d7-8c27-d02aa81592f3",
+        "name": "Sticky Note6"
+      },
+      {
+        "parameters": {
+          "content": "## Reply Discussion",
+          "height": 320,
+          "width": 480,
+          "color": 2
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          620,
+          -40
+        ],
+        "typeVersion": 1,
+        "id": "adc95527-402b-46ed-a4a8-119cde9fe960",
+        "name": "Sticky Note7"
+      },
+      {
+        "parameters": {
+          "content": "## Waiting for User to Approve Command",
+          "height": 320,
+          "width": 480,
+          "color": 2
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          620,
+          300
+        ],
+        "typeVersion": 1,
+        "id": "5a14eb13-6e77-4148-83e4-f01cd0eecc84",
+        "name": "Sticky Note8"
+      },
+      {
+        "parameters": {
+          "content": "## Reject or Approve ?",
+          "height": 320,
+          "width": 480,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          1120,
+          -40
+        ],
+        "typeVersion": 1,
+        "id": "7ebaea5f-6b38-4bad-9890-dea6f8c01d87",
+        "name": "Sticky Note9"
+      },
+      {
+        "parameters": {
+          "content": "## Send Reject Confirmation",
+          "height": 320,
+          "width": 480,
+          "color": 3
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          1120,
+          300
+        ],
+        "typeVersion": 1,
+        "id": "7ca38d74-7251-4362-be50-c0c7e20a30a5",
+        "name": "Sticky Note10"
+      },
+      {
+        "parameters": {
+          "content": "## Server Identifier Switcher",
+          "height": 320,
+          "width": 480,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          1620,
+          -40
+        ],
+        "typeVersion": 1,
+        "id": "34384edd-ea0f-43a4-b259-3b40afbed1c7",
+        "name": "Sticky Note11"
+      },
+      {
+        "parameters": {
+          "command": "={{ $('COMMAND or DISCUSSION').item.json.output.command }}",
+          "cwd": "={{ ($('COMMAND or DISCUSSION').item.json.output.workingDirectory || '/').replaceAll('~', '/') }}"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          2340,
+          -200
+        ],
+        "id": "e3d2a37f-9b79-4034-b2c6-9ce3baf8eff5",
+        "name": "SSH - FE",
+        "credentials": {
+          "sshPassword": {
+            "id": "fd6cwCFBwwDetamL",
+            "name": "SSH - JH - 103.245.38.239 - FE"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ JSON.stringify($json) }}",
+          "options": {
+            "systemMessage": "=Kamu adalah seorang system administrator paling handal sedunia! Kamu harus bisa menjelaskan apa maksud dari output perintah SSH yang dikirimkan oleh user. User baru saja mengirimkan perintah \"{{ $('COMMAND or DISCUSSION').item.json.output.command }}\" di directory \"{{ $('COMMAND or DISCUSSION').item.json.output.workingDirectory || '/' }}\" melalui SSH.\n\nGunakan tool \"SysadminThinkTool\" untuk berfikir dan menyusun jawaban kepada user.\n\nJelaskan secara singkat dan padat dan tidak usah mencantumkan json output, supaya lebih enak dibaca di chat."
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.9,
+        "position": [
+          3320,
+          100
+        ],
+        "id": "88b46323-c662-4458-a9ff-98e6d26aad0c",
+        "name": "Explainer AI Agent"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4.1-mini"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          3300,
+          360
+        ],
+        "id": "a19cf4da-d42b-4708-9284-57140fee352e",
+        "name": "Explainer Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "KJPhnHT5PPdHb1Bl",
+            "name": "OpenAI - Aji Prakoso"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "command": "={{ $('COMMAND or DISCUSSION').item.json.output.command }}",
+          "cwd": "={{ ($('COMMAND or DISCUSSION').item.json.output.workingDirectory || '/').replaceAll('~', '/') }}"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          2340,
+          60
+        ],
+        "id": "5de685e3-3d58-4b7f-bf68-6471dc983df4",
+        "name": "SSH - BE",
+        "credentials": {
+          "sshPassword": {
+            "id": "jrJcSHaEJwucIUcx",
+            "name": "SSH - JH - 103.245.39.22 - BE"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "command": "={{ $('COMMAND or DISCUSSION').item.json.output.command }}",
+          "cwd": "={{ ($('COMMAND or DISCUSSION').item.json.output.workingDirectory || '/').replaceAll('~', '/') }}"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          2340,
+          320
+        ],
+        "id": "cf9caf2f-5ece-4cfa-968c-891fecb6dcf7",
+        "name": "SSH - PROXY",
+        "credentials": {
+          "sshPassword": {
+            "id": "JHufmzQhPinFxYof",
+            "name": "SSH - JH - 103.16.117.102 - PROXY"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## Server Access List",
+          "height": 840,
+          "width": 560,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          2120,
+          -300
+        ],
+        "typeVersion": 1,
+        "id": "30e72f3b-4fa8-4b0d-8a4a-2780c4458876",
+        "name": "Sticky Note12"
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.toolThink",
+        "typeVersion": 1,
+        "position": [
+          -120,
+          160
+        ],
+        "id": "e83f172c-22b4-4157-b95a-4ac0a1e2220e",
+        "name": "SysadminThinkTool"
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.toolThink",
+        "typeVersion": 1,
+        "position": [
+          3500,
+          360
+        ],
+        "id": "75683bc4-dcc7-492c-8c4c-d401b7c81ad1",
+        "name": "ExplainerThinkTool"
+      },
+      {
+        "parameters": {
+          "content": "## Merge the Data",
+          "height": 320,
+          "width": 480,
+          "color": 7
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          2700,
+          0
+        ],
+        "typeVersion": 1,
+        "id": "4d37f739-e12d-42d1-a192-91e996d865c1",
+        "name": "Sticky Note13"
+      },
+      {
+        "parameters": {
+          "content": "## Explain the Output from SSH",
+          "height": 540,
+          "width": 480,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          3200,
+          0
+        ],
+        "typeVersion": 1,
+        "id": "2be17a9b-8b06-4204-9ca3-82b8c647f2c8",
+        "name": "Sticky Note14"
+      },
+      {
+        "parameters": {
+          "content": "## Send Output to User",
+          "height": 320,
+          "width": 480,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          3700,
+          0
+        ],
+        "typeVersion": 1,
+        "id": "8a1328fb-78ad-4949-8660-1461dd4721fe",
+        "name": "Sticky Note15"
+      },
+      {
+        "parameters": {
+          "updates": [
+            "message"
+          ],
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.telegramTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -2800,
+          -120
+        ],
+        "id": "c8abae2d-2888-4f65-9598-a6dfc3c14c11",
+        "name": "Telegram Trigger",
+        "webhookId": "1683fd9b-1290-46e0-9c99-7e447d415d1f",
+        "credentials": {
+          "telegramApi": {
+            "id": "8UyJRQDQFDoOp2nB",
+            "name": "Telegram @JagoanhostingBot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "33eef9d5-222a-4ac8-bfa5-7475af6f41ab",
+                "leftValue": "={{ $json.message.from.id }}",
+                "rightValue": "928922141",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "looseTypeValidation": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -2420,
+          -120
+        ],
+        "id": "723e8380-7f58-4643-973d-f18ee5bc9ae7",
+        "name": "If User is Allowed"
+      },
+      {
+        "parameters": {
+          "content": "## Inbound Chat Receiver",
+          "height": 240,
+          "width": 360,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          -2540,
+          -180
+        ],
+        "typeVersion": 1,
+        "id": "7bd8ab5d-0b44-472b-9c4e-b39c472b7501",
+        "name": "Sticky Note16"
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+          "text": "Not allowed ~",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          -2040,
+          20
+        ],
+        "id": "b58794da-6cc2-4cc1-ab7c-d5c36f46a847",
+        "name": "Not Allowed Message",
+        "webhookId": "6b9576ce-bfb2-452d-8a6d-d10771a144b8",
+        "credentials": {
+          "telegramApi": {
+            "id": "8UyJRQDQFDoOp2nB",
+            "name": "Telegram @JagoanhostingBot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## Not Allowed",
+          "height": 240,
+          "width": 360,
+          "color": 3
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          -2160,
+          -40
+        ],
+        "typeVersion": 1,
+        "id": "bf1546c9-583a-480c-8e25-c93f6fc0fc74",
+        "name": "Sticky Note17"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "a8c608d9-3bfb-430e-8bd5-4f8e097e902b",
+                "leftValue": "={{ $json.message.voice }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "object",
+                  "operation": "exists",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -2040,
+          -220
+        ],
+        "id": "3d83756c-f76e-4266-96ae-0a16ed5cf7e3",
+        "name": "If Voice Note"
+      },
+      {
+        "parameters": {
+          "resource": "file",
+          "fileId": "={{ $json.message.voice.file_id }}"
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          -1660,
+          -260
+        ],
+        "id": "177ab71a-4c10-4609-b8ee-6c50bf713ee2",
+        "name": "Download Audio",
+        "webhookId": "db5582a7-0662-4c0c-8156-cfc62b5e51d2",
+        "credentials": {
+          "telegramApi": {
+            "id": "8UyJRQDQFDoOp2nB",
+            "name": "Telegram @JagoanhostingBot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+          "text": "={{ $json.output.discussion }}",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          820,
+          60
+        ],
+        "id": "0fba95b9-53f8-4652-857b-3c812cfb49c5",
+        "name": "Send Discussion",
+        "webhookId": "98d9c0af-94f5-43e7-9bc2-a5c6a8264627",
+        "credentials": {
+          "telegramApi": {
+            "id": "8UyJRQDQFDoOp2nB",
+            "name": "Telegram @JagoanhostingBot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "sendAndWait",
+          "chatId": "=928922141",
+          "message": "=Apakah saya diizinkan untuk menjalankan perintah dibawah ini di server *{{ $json.output.server }}*?\n\n*{{ $json.output.command }}*\n\nBerikut ini penjelasan dari perintah tersebut :\n_{{ $json.output.explanation }}_",
+          "approvalOptions": {
+            "values": {
+              "approvalType": "double"
+            }
+          },
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          820,
+          400
+        ],
+        "id": "9445fd19-7c3e-480f-9738-b4a5943df5b2",
+        "name": "Approval Process",
+        "webhookId": "76af8f95-b8ce-412d-abe9-6f4f5e51a278",
+        "credentials": {
+          "telegramApi": {
+            "id": "8UyJRQDQFDoOp2nB",
+            "name": "Telegram @JagoanhostingBot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+          "text": "={{ $json.output }}",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          3900,
+          100
+        ],
+        "id": "99debb8d-05e4-42a5-a5de-6bd81a604771",
+        "name": "Send Response",
+        "webhookId": "88cfc423-b284-495b-8bd5-70dc976467b5",
+        "credentials": {
+          "telegramApi": {
+            "id": "8UyJRQDQFDoOp2nB",
+            "name": "Telegram @JagoanhostingBot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+          "text": "Baik, saya tidak akan mengeksekusi perintah tersebut.  Terima kasih.",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          1300,
+          420
+        ],
+        "id": "744c1e1c-427d-4109-9f24-43a306fa3c57",
+        "name": "Reject Confirmation",
+        "webhookId": "56837514-a135-4887-bcfc-9a3e3b68fc1b",
+        "credentials": {
+          "telegramApi": {
+            "id": "8UyJRQDQFDoOp2nB",
+            "name": "Telegram @JagoanhostingBot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+          "text": "Maaf, aku tidak berhasil memproses pesan mu. Silahkan coba lagi, aku akan coba memprosesnya lagi.",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          820,
+          760
+        ],
+        "id": "6de5d4f3-d1a8-4824-8431-d1b867cb9f33",
+        "name": "Error Message",
+        "webhookId": "0e0976b9-8de6-4ac1-b91f-55076d3bb8ce",
+        "credentials": {
+          "telegramApi": {
+            "id": "8UyJRQDQFDoOp2nB",
+            "name": "Telegram @JagoanhostingBot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## Error Message",
+          "height": 320,
+          "width": 480,
+          "color": 2
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          620,
+          640
+        ],
+        "typeVersion": 1,
+        "id": "4165651a-27d6-4f43-8934-560ecf3c1963",
+        "name": "Sticky Note18"
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "If Approved": {
+        "main": [
+          [
+            {
+              "node": "Switch",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Reject Confirmation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch": {
+        "main": [
+          [
+            {
+              "node": "SSH - FE",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "SSH - BE",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "SSH - PROXY",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "Sysadmin AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            },
+            {
+              "node": "Explainer AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "Sysadmin AI Agent",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "COMMAND or DISCUSSION": {
+        "main": [
+          [
+            {
+              "node": "Send Discussion",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Approval Process",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge": {
+        "main": [
+          [
+            {
+              "node": "Explainer AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Sysadmin AI Agent": {
+        "main": [
+          [
+            {
+              "node": "COMMAND or DISCUSSION",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Error Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Sysadmin Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Sysadmin AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI": {
+        "main": [
+          [
+            {
+              "node": "Audio Mapper",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Audio Mapper": {
+        "main": [
+          [
+            {
+              "node": "Data Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Data Merge": {
+        "main": [
+          [
+            {
+              "node": "Sysadmin AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "Data Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SSH - FE": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Explainer AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Send Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Explainer Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Explainer AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SSH - BE": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SSH - PROXY": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SysadminThinkTool": {
+        "ai_tool": [
+          [
+            {
+              "node": "Sysadmin AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ExplainerThinkTool": {
+        "ai_tool": [
+          [
+            {
+              "node": "Explainer AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram Trigger": {
+        "main": [
+          [
+            {
+              "node": "If User is Allowed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If User is Allowed": {
+        "main": [
+          [
+            {
+              "node": "If Voice Note",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Not Allowed Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If Voice Note": {
+        "main": [
+          [
+            {
+              "node": "Download Audio",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Audio": {
+        "main": [
+          [
+            {
+              "node": "OpenAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Approval Process": {
+        "main": [
+          [
+            {
+              "node": "If Approved",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Reject Confirmation": {
+        "main": [
+          []
+        ]
+      }
+    },
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "80a152cc-86dd-492c-a8ed-871fa4bb3e92",
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "f1074a8a8cadfd46eea13918e688f4d1dfce88af47514807f67f4dab06d2e497"
+    },
+    "id": "7MSqHTxq6S3m0wMV",
+    "tags": []
+  }
