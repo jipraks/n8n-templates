@@ -1,0 +1,468 @@
+{
+    "name": "HR AI",
+    "nodes": [
+      {
+        "parameters": {
+          "formTitle": "Formulir Lamaran Kerja",
+          "formDescription": "Isi data diri Anda untuk melamar di PT. Jago Otomasi Indonesia",
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "Nama Lengkap",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Tanggal Lahir",
+                "fieldType": "date",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Posisi Yang Dilamar",
+                "fieldType": "dropdown",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "ITJRDEV - Junior Developer"
+                    },
+                    {
+                      "option": "ITSRDEV - Senior Developer"
+                    },
+                    {
+                      "option": "ITBEDEV - Backend Developer"
+                    },
+                    {
+                      "option": "ITFEDEV - Frontend Developer"
+                    }
+                  ]
+                },
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Upload CV (.pdf)",
+                "fieldType": "file",
+                "multipleFiles": false,
+                "acceptFileTypes": ".pdf",
+                "requiredField": true
+              }
+            ]
+          },
+          "options": {
+            "appendAttribution": false,
+            "buttonLabel": "Kirim Lamaran",
+            "customCss": ":root {\n\t--font-family: 'Open Sans', sans-serif;\n\t--font-weight-normal: 400;\n\t--font-weight-bold: 600;\n\t--font-size-body: 12px;\n\t--font-size-label: 14px;\n\t--font-size-test-notice: 12px;\n\t--font-size-input: 14px;\n\t--font-size-header: 20px;\n\t--font-size-paragraph: 14px;\n\t--font-size-link: 12px;\n\t--font-size-error: 12px;\n\t--font-size-html-h1: 28px;\n\t--font-size-html-h2: 20px;\n\t--font-size-html-h3: 16px;\n\t--font-size-html-h4: 14px;\n\t--font-size-html-h5: 12px;\n\t--font-size-html-h6: 10px;\n\t--font-size-subheader: 14px;\n\n\t/* Colors */\n\t--color-background: #fbfcfe;\n\t--color-test-notice-text: #e6a23d;\n\t--color-test-notice-bg: #fefaf6;\n\t--color-test-notice-border: #f6dcb7;\n\t--color-card-bg: #ffffff;\n\t--color-card-border: #dbdfe7;\n\t--color-card-shadow: rgba(99, 77, 255, 0.06);\n\t--color-link: #7e8186;\n\t--color-header: #525356;\n\t--color-label: #555555;\n\t--color-input-border: #dbdfe7;\n\t--color-input-text: #71747A;\n\t--color-focus-border: rgb(90, 76, 194);\n\t--color-submit-btn-bg: #0000FF;\n\t--color-submit-btn-text: #ffffff;\n\t--color-error: #ea1f30;\n\t--color-required: #ff6d5a;\n\t--color-clear-button-bg: #7e8186;\n\t--color-html-text: #555;\n\t--color-html-link: #ff6d5a;\n\t--color-header-subtext: #7e8186;\n\n\t/* Border Radii */\n\t--border-radius-card: 8px;\n\t--border-radius-input: 6px;\n\t--border-radius-clear-btn: 50%;\n\t--card-border-radius: 8px;\n\n\t/* Spacing */\n\t--padding-container-top: 24px;\n\t--padding-card: 24px;\n\t--padding-test-notice-vertical: 12px;\n\t--padding-test-notice-horizontal: 24px;\n\t--margin-bottom-card: 16px;\n\t--padding-form-input: 12px;\n\t--card-padding: 24px;\n\t--card-margin-bottom: 16px;\n\n\t/* Dimensions */\n\t--container-width: 448px;\n\t--submit-btn-height: 48px;\n\t--checkbox-size: 18px;\n\n\t/* Others */\n\t--box-shadow-card: 0px 4px 16px 0px var(--color-card-shadow);\n\t--opacity-placeholder: 0.5;\n}"
+          }
+        },
+        "type": "n8n-nodes-base.formTrigger",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "a3cd20c8-a4c4-4eae-8809-115b3a8d4fdd",
+        "name": "On form submission",
+        "webhookId": "65887e89-8113-4934-b500-17c495abaa56"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Isian Form :\nNama Lengkap : {{ $('On form submission').item.json['Nama Lengkap'] }}\nTanggal Lahir : {{ $('On form submission').item.json['Tanggal Lahir'] }}\n\nIsi CV PDF :\n{{ $('Extract PDF').item.json.text }}\n\n# Requirement Posisi\nUsia Minimal : {{ $json['Min Age'] }}\nUsia Maximal : {{ $json['Max Age'] }}\nMinimal Tahun Pengalaman Kerja : {{ $json['Min YoE'] }}\nPendidikan Minimal : {{ $json['Min Education'] }}\nRequired Skill : {{ $json['Required Skill'] }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "=Hari ini adalah tanggal {{ $now.format('yyyy-MM-dd') }}.\n\nKamu adalah seorang staff HR yang bertugas untuk memfilter dan memberikan penilaian awal terhadap lamaran masuk dan harus kamu bandingkan dengan posisi yang tersedia di perusahaan dengan cara menganalisa isi CV yang dikirimkan.\n\nOutput yang harus kamu berikan :\n\n- Nama Lengkap\n- Tanggal Lahir\n- Usia Per Hari Ini (Tahun, Bulan, Hari)\n- Kecocokan Usia Dalam Persentase (Berdasarkan Usia Minimum dan Maksimum)\n- Kecocokan Status Pendidikan Dalam Persentase (Kalau strata pendidikan diatas batas minimal, maka 100%, kalau dibawah batas minimal, semakin jauh, semakin kecil persentasenya)\n- Kecocokan tahun pengalaman kerja dalam persentase,\n- Kecocokan skill yang dibutuhkan dalam persentase.\n\nContoh output :\n\n{\n  \"fullname\": \"<nama lengkap, bisa dari form atau CV, cari yang paling lengkap>\",\n  \"dob\": \"<Tanggal Lahir>\",\n  \"age\": \"<Usia per hari ini - contoh 20 Tahun, 8 Bulan, 9 hari>\",\n  \"vacancy_min_age\": \"<Usia Minimum dalam lowongan>\",\n  \"vacancy_max_age\": \"<Usia Maksimum dalam lowongan>\",\n  \"age_percentage\": \"<persentase kecocokan usia dengan lowongan, angkanya saja tanpa simbol %>\",\n  \"education_level\": \"<Level pendidikan pelamar - contoh SD, SLTA, S1, dll>\",\n  \"vacancy_education_level\": \"<level pendidikan minimal dalam lowongan>\",\n  \"education_percentage\": \"<persentase kecocokan strata pendidikan dengan lowongan, angkanya saja tanpa simbol %>\",\n  \"yoe\": \"<total tahun pengalaman pelamar>\",\n  \"vacancy_yoe\": \"<tahun pengalaman kerja yang dibutuhkan di lowongan>\",\n  \"yoe_percentage\": \"<kecocokan tahun pengalaman kerja dalam persentase, angkanya saja tanpa simbol %\",\n  \"skills\": \"<skill utama dari pelamar dengan pemisah koma>\",\n  \"vacancy_skills\": \"<skill yang dibutuhkan dalam lowongan>\",\n  \"skill_percentage\": \"<kecocokan skill dalam persentase dengan lowongan, angkanya saja tanpa simbol %>\",\n  \"average_percentage\": \"<persentase rata-rata dari age_percentage, education_percentage, yoe_percentage, skill_percentage, angkanya saja tanpa simbol %>\"\n}\n\n# PENTING\n- JANGAN PERNAH berhalusinasi soal data. Pastikan data yang kamu hitung valid.",
+            "passthroughBinaryImages": true
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2,
+        "position": [
+          780,
+          0
+        ],
+        "id": "add1d97c-47d1-4b14-855d-f71cc8f7b441",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1",
+            "mode": "list",
+            "cachedResultName": "gpt-4.1"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          680,
+          260
+        ],
+        "id": "5ae4a79f-4f10-409e-8c14-2af88240a0dd",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "y8sLJ2LzZL2c7SGi",
+            "name": "OpenAI Webinar"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "value": "1buT5kZNGGwjCYfgBt1LrVbwz66q45R6tQoMUQqguk5w",
+            "mode": "list",
+            "cachedResultName": "AI HR",
+            "cachedResultUrl": "https://docs.google.com/"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Vacancy",
+            "cachedResultUrl": "https://docs.google.com/"
+          },
+          "filtersUI": {
+            "values": [
+              {
+                "lookupColumn": "Position",
+                "lookupValue": "={{ $('On form submission').item.json['Posisi Yang Dilamar'] }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.6,
+        "position": [
+          500,
+          0
+        ],
+        "id": "872554ae-6c89-4cf0-928f-03478cb9fc68",
+        "name": "Get Vacancy",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "qKBvcP6SqTA7vqHl",
+            "name": "Google Sheets account 3"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "pdf",
+          "binaryPropertyName": "Upload_CV___pdf_",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1,
+        "position": [
+          260,
+          0
+        ],
+        "id": "73ec3a99-3f1c-4bbd-a84c-fbf5c2384b23",
+        "name": "Extract PDF"
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\n  \"fullname\": \"<nama lengkap, bisa dari form atau CV, cari yang paling lengkap>\",\n  \"dob\": \"<Tanggal Lahir>\",\n  \"age\": \"<Usia per hari ini - contoh 20 Tahun, 8 Bulan, 9 hari>\",\n  \"vacancy_min_age\": \"<Usia Minimum dalam lowongan>\",\n  \"vacancy_max_age\": \"<Usia Maksimum dalam lowongan>\",\n  \"age_percentage\": \"<persentase kecocokan usia dengan lowongan, angkanya saja tanpa simbol %>\",\n  \"education_level\": \"<Level pendidikan pelamar - contoh SD, SLTA, S1, dll>\",\n  \"vacancy_education_level\": \"<level pendidikan minimal dalam lowongan>\",\n  \"education_percentage\": \"<persentase kecocokan strata pendidikan dengan lowongan, angkanya saja tanpa simbol %>\",\n  \"yoe\": \"<total tahun pengalaman pelamar>\",\n  \"vacancy_yoe\": \"<tahun pengalaman kerja yang dibutuhkan di lowongan>\",\n  \"yoe_percentage\": \"<kecocokan tahun pengalaman kerja dalam persentase, angkanya saja tanpa simbol %\",\n  \"skills\": \"<skill utama dari pelamar dengan pemisah koma>\",\n  \"vacancy_skills\": \"<skill yang dibutuhkan dalam lowongan>\",\n  \"skill_percentage\": \"<kecocokan skill dalam persentase dengan lowongan, angkanya saja tanpa simbol %>\",\n  \"average_percentage\": \"<persentase rata-rata dari age_percentage, education_percentage, yoe_percentage, skill_percentage, angkanya saja tanpa simbol %>\"\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.3,
+        "position": [
+          1000,
+          260
+        ],
+        "id": "1f4f00f3-c643-46e8-ba67-92574a76b6da",
+        "name": "Structured Output Parser"
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1buT5kZNGGwjCYfgBt1LrVbwz66q45R6tQoMUQqguk5w",
+            "mode": "list",
+            "cachedResultName": "AI HR",
+            "cachedResultUrl": "https://docs.google.com/"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 180424369,
+            "mode": "list",
+            "cachedResultName": "Applicant",
+            "cachedResultUrl": "https://docs.google.com/"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Fullname": "={{ $json.output.fullname }}",
+              "DoB": "={{ $json.output.dob }}",
+              "Age": "={{ $json.output.age }}",
+              "Vacancy Min Age": "={{ $json.output.vacancy_min_age }}",
+              "Vacancy Max Age": "={{ $json.output.vacancy_max_age }}",
+              "Age Percentage": "={{ $json.output.age_percentage }}",
+              "Education Level": "={{ $json.output.education_level }}",
+              "Vacancy Education Level": "={{ $json.output.vacancy_education_level }}",
+              "Education Percentage": "={{ $json.output.education_percentage }}",
+              "YoE": "={{ $json.output.yoe }}",
+              "YoE Percentage": "={{ $json.output.yoe_percentage }}",
+              "Vacancy YoE": "={{ $json.output.vacancy_yoe }}",
+              "Skills": "={{ $json.output.skills }}",
+              "Vacancy Skills": "={{ $json.output.vacancy_skills }}",
+              "Skill Percentage": "={{ $json.output.skill_percentage }}",
+              "Average Percentage": "={{ $json.output.average_percentage }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Fullname",
+                "displayName": "Fullname",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "DoB",
+                "displayName": "DoB",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Age",
+                "displayName": "Age",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Vacancy Min Age",
+                "displayName": "Vacancy Min Age",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Vacancy Max Age",
+                "displayName": "Vacancy Max Age",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Age Percentage",
+                "displayName": "Age Percentage",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Education Level",
+                "displayName": "Education Level",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Vacancy Education Level",
+                "displayName": "Vacancy Education Level",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Education Percentage",
+                "displayName": "Education Percentage",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "YoE",
+                "displayName": "YoE",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Vacancy YoE",
+                "displayName": "Vacancy YoE",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "YoE Percentage",
+                "displayName": "YoE Percentage",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Skills",
+                "displayName": "Skills",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Vacancy Skills",
+                "displayName": "Vacancy Skills",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Skill Percentage",
+                "displayName": "Skill Percentage",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Average Percentage",
+                "displayName": "Average Percentage",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.6,
+        "position": [
+          1140,
+          0
+        ],
+        "id": "e5aa6629-ec6c-4b03-a10e-ff1357ef6d2c",
+        "name": "Save Applicant",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "qKBvcP6SqTA7vqHl",
+            "name": "Google Sheets account 3"
+          }
+        }
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "On form submission": {
+        "main": [
+          [
+            {
+              "node": "Extract PDF",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Vacancy": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract PDF": {
+        "main": [
+          [
+            {
+              "node": "Get Vacancy",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Save Applicant",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Applicant": {
+        "main": [
+          []
+        ]
+      }
+    },
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "f3bd384e-cd46-43e6-bce3-cbc484227cac",
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "fa52a98dd39f67760c7540fff8a0dd5306d89f766551eb7a7c84b5f43eb33d4c"
+    },
+    "id": "2LEk0uAxPLc8aFwP",
+    "tags": []
+  }
