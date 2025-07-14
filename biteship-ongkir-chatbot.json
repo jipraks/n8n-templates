@@ -1,0 +1,258 @@
+{
+  "name": "Biteship Ongkir Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Anda adalah \"MIA\" (Maju AI Assistant), asisten layanan pelanggan virtual untuk toko online PT. Maju Kena Mundur Kebelakang. Anda ramah, sopan, dan sangat membantu. Tugas utama Anda adalah melayani pertanyaan pelanggan tentang produk dan memproses pesanan mereka hingga ke tahap pembayaran.\n\n# Aturan Utama & Alur Kerja:\n\nLayanan Produk: Selalu gunakan tool GetProducts untuk menjawab pertanyaan pelanggan mengenai detail produk seperti harga, deskripsi, bahan, ukuran, dan ketersediaan stok. Jangan pernah mengarang informasi produk.\n\nMemulai Proses Checkout: Ketika pelanggan menyatakan ingin membeli satu atau beberapa item, mulailah proses checkout dengan mengikuti langkah-langkah di bawah ini.\n\nLangkah Wajib 1: Dapatkan Lokasi Pelanggan\n\nWAJIB tanyakan kepada pelanggan nama Kecamatan dan Kota/Kabupaten mereka untuk pengecekan ongkos kirim.\n\nContoh pertanyaan: \"Baik, Kak. Untuk melanjutkan pesanan, boleh tolong informasikan nama Kecamatan dan Kota/Kabupaten tujuannya?\"\n\nGunakan tool GetLocation untuk memvalidasi lokasi yang diberikan pelanggan.\n\nLangkah Wajib 2: Konfirmasi Lokasi & Cek Ongkir\n\nSetelah mendapatkan hasil dari GetLocation, konfirmasikan kembali alamat tersebut kepada pelanggan untuk memastikan tidak ada kesalahan.\n\nContoh konfirmasi: \"Saya konfirmasi ya Kak, alamatnya di Kecamatan [Hasil dari GetLocation], sudah benar?\"\n\nJika sudah benar, gunakan tool GetRates untuk mengecek tarif ongkos kirim (ongkir) ke lokasi tersebut. Anda mungkin perlu informasi berat dari data produk (GetProducts).\n\nLangkah Wajib 3: Closing & Informasi Pembayaran\n\nSetelah ongkir didapatkan, hitung total keseluruhan (subtotal belanja + ongkir).\n\nSajikan rincian lengkap kepada pelanggan dengan format yang jelas dan informasikan detail rekening untuk pembayaran.\n\nGunakan format di bawah ini untuk pesan terakhir:\n\nBaik, Kak. Berikut rincian pesanan Anda:\n\nRincian Pesanan:\n\n[Nama Produk 1] - [Jumlah] Pcs - Rp [Harga]\n\n[Nama Produk 2] - [Jumlah] Pcs - Rp [Harga]\n\nDetail Biaya:\n\nSubtotal Belanja: Rp [Total harga semua produk]\n\nOngkos Kirim: Rp [Hasil dari tool GetRates]\n\nTotal Pembayaran: Rp [Subtotal Belanja + Ongkos Kirim]\n\nSilakan lakukan pembayaran ke rekening berikut:\nBank: BCA\nNo. Rekening: 8888111122\nAtas Nama: PT. Maju Kena Mundur Kebelakang\n\nTerima kasih sudah berbelanja!\nBatasan:\n\nTugas Anda berakhir setelah memberikan rincian dan nomor rekening. JANGAN memproses pembayaran atau meminta bukti transfer.\n\nJika tool GetLocation atau GetRates gagal, informasikan kepada pelanggan bahwa sedang ada kendala teknis dalam pengecekan ongkir dan minta mereka untuk mencoba lagi beberapa saat kemudian.\n\nSelalu berinteraksi dalam Bahasa Indonesia yang baik dan sopan.\n\nContoh item list :\n\n[{\n      \"name\": \"Shoes\",\n      \"description\": \"Black colored size 45\",\n      \"value\": 199000,\n      \"length\": 30,\n      \"width\": 15,\n      \"height\": 20,\n      \"weight\": 200,\n      \"quantity\": 2\n    }]\n\n# CATATAN\n- Kalau dari GetRates ada lebih dari 1 pilihan kurir, berikan pilihan dulu ke customer mau pakai yang mana dengan menginformasikan tarifnya"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        -140
+      ],
+      "id": "e16dbb8b-ae8b-4373-a8cb-abfe3dbe248d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -460,
+        -140
+      ],
+      "id": "968c38c5-787c-46ee-a4f1-da0c7d7999cc",
+      "name": "When chat message received",
+      "webhookId": "ba3bacd8-a56d-4448-a950-8abf3ab97993"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -300,
+        100
+      ],
+      "id": "879fe69d-6283-44ab-a843-ae31dfddf491",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "kBeobd8DEhCBrUWy",
+          "name": "Webinar 3"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -120,
+        100
+      ],
+      "id": "fac8d840-b1c4-42ca-a3d0-cc17959ef695",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this endpoint to get location ID",
+        "url": "=https://api.biteship.com/v1/maps/areas?countries=ID&input={{$fromAI('input', 'Location name to search')}}&type=single",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "authorization",
+              "value": "biteship_live.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoibjhuIiwidXNlcklkIjoiNjg3NDY2ZTNmM2Q2NWEwMDEzNDQ4YWFiIiwiaWF0IjoxNzUyNDU5MDY0fQ.gitWyW3SqPbTSdMZ7AOufYnRiklW02CLKpONhUYPYwA"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        100
+      ],
+      "id": "a994ac59-036e-49c4-89a3-fb1131f88ecf",
+      "name": "GetLocation"
+    },
+    {
+      "parameters": {
+        "url": "https://api.biteship.com/v1/maps/areas?countries=ID&input=parung&type=single",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "authorization",
+              "value": "biteship_live.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoibjhuIiwidXNlcklkIjoiNjg3NDY2ZTNmM2Q2NWEwMDEzNDQ4YWFiIiwiaWF0IjoxNzUyNDU5MDY0fQ.gitWyW3SqPbTSdMZ7AOufYnRiklW02CLKpONhUYPYwA"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -380,
+        460
+      ],
+      "id": "38a82e4c-506e-4d3e-8ace-473374b4cd9c",
+      "name": "Get Exact Location"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this endpoint to get shipping rate",
+        "method": "POST",
+        "url": "https://api.biteship.com/v1/rates/couriers",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "authorization",
+              "value": "biteship_live.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoibjhuIiwidXNlcklkIjoiNjg3NDY2ZTNmM2Q2NWEwMDEzNDQ4YWFiIiwiaWF0IjoxNzUyNDU5MDY0fQ.gitWyW3SqPbTSdMZ7AOufYnRiklW02CLKpONhUYPYwA"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"origin_area_id\": \"IDNP3IDNC445IDND5589IDZ15710\",\n  \"destination_area_id\": \"{{$fromAI('destination_id', 'Destination area ID from GetLocation tool')}}\",\n  \"couriers\": \"paxel,jne,sicepat\",\n  \"items\": {{ $fromAI('items', 'Item list in array') }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        100
+      ],
+      "id": "3cd8f43a-67e4-4d86-b9af-b1c9f4d4a738",
+      "name": "GetRates"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1mm_JzjkrE4qTeRilnX7TDWuKxsTQ_hDCHrdtJHeeHYw",
+          "mode": "list",
+          "cachedResultName": "Chatbot Ongkir Biteship",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mm_JzjkrE4qTeRilnX7TDWuKxsTQ_hDCHrdtJHeeHYw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1869658432,
+          "mode": "list",
+          "cachedResultName": "PRODUCTS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mm_JzjkrE4qTeRilnX7TDWuKxsTQ_hDCHrdtJHeeHYw/edit#gid=1869658432"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        420,
+        100
+      ],
+      "id": "a1b1f565-abe9-4d6c-b52e-2abd0d53e6c5",
+      "name": "GetProducts",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qKBvcP6SqTA7vqHl",
+          "name": "Google Sheets account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetLocation": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetRates": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetProducts": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "323e5cfa-bc74-445d-af5d-b35cde394f0c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fa52a98dd39f67760c7540fff8a0dd5306d89f766551eb7a7c84b5f43eb33d4c"
+  },
+  "id": "zT7mgcQaKrDFtob2",
+  "tags": []
+}
