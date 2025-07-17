@@ -1,0 +1,267 @@
+{
+  "name": "AI News Indonesia",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Cari berita AI hari ini ({{ $now.format('yyyy-MM-dd') }})",
+        "options": {
+          "systemMessage": "=Kamu adalah seorang wartawan yang sangat ahli dalam mencari informasi dari berbagai sumber situs berita.\n\n\n\nKamu bertugas untuk mencari berita terbaru tentang AI dari tool-tool yang sudah disediakan : \n- RSS Feed \"TheDecoder\"\n- RSS Feed \"TechCrunch\" \n- Google Search \"GoogleSearch\"\nPENTING : PASTIKAN KAMU MENGGUNAKAN SEMUA TOOL TERSEBUT!\n\nKamu harus bisa mengkombinasikan semua berita dari tools-tools tersebut.\n\nKamu harus memilih maksimal 7 berita yang paling menarik dari semua sumber yang kamu miliki, berita-beritanya harus yang masih aktual (1 hari terakhir dari hari ini : {{ $now.format('yyyy-MM-dd') }})\n\nSetelah kamu memilih maksimal 7 berita, gunakan tool \"HttpTool\" untuk mendapatkan isi berita supaya kamu dapat merangkum dengan lebih baik.\n\nKamu HARUS menggunakan tool \"Think\" untuk merencanakan dan berfikir sebelum bertindak atau memberikan respon.\n\nJika kamu sudah memiliki informasi cukup, respon dengan rangkuman berita AI yang sudah kamu kumpulkan dalam bahasa indonesia yang singkat, mudah dimengerti, namun tetap mempertahankan konteks beritanya.\n\nCantumkan juga link per berita nya ya.\n\n## PENTING ##\n- Pilih berita yang masih baru (jangan berikan berita yang lebih lama dari 1 hari lalu) berarti berita harus diterbitkan setelah tanggal {{$now.minus(1, 'days').format('dd MMMM yyyy') }},\n- Usahakan campur berita dari beberapa feed yang kamu terima, jangan fokus dengan 1 feed saja\n- Berita akan disebarkan via Channel Telegram dan WhatsApp, jadi jangan ada imbuhan atau pertanyaan apapun.\n- Jangan memberikan link dalam format \"([Selengkapnya](https://the-decoder.com/anthropic-triples-revenue-to-3-billion-as-corporate-demand-for-generative-ai-surges/))\" atau \"[Link](https://the-decoder.com/anthropic-triples-revenue-to-3-billion-as-corporate-demand-for-generative-ai-surges/)\" karena tidak akan terbaca saat dikirimkan via WhatsApp, langsung kirim linknya saja sebagai teks biasa, tidak usah di parse,\n- Antar berita, berikan satu baris kosong supaya lebih enak bacanya"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        360,
+        0
+      ],
+      "id": "55474565-7c73-42b9-b9fc-3b5e7cd47703",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "url": "https://the-decoder.com/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedReadTool",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        240
+      ],
+      "id": "92380dd6-29be-42ea-97bb-beb8d4da0c4c",
+      "name": "TheDecoder"
+    },
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/tag/artificial-intelligence/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedReadTool",
+      "typeVersion": 1.1,
+      "position": [
+        780,
+        240
+      ],
+      "id": "3a090115-2ace-43a9-b251-0b691b075b4d",
+      "name": "TechCrunch"
+    },
+    {
+      "parameters": {
+        "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('URL', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        240
+      ],
+      "id": "c6634952-11e9-43ec-9f77-dfd7c5f868e6",
+      "name": "HttpTool"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        240
+      ],
+      "id": "b3af05ba-412c-4cbc-88c6-98779bf003ef",
+      "name": "ThinkTool"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "14 8 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        40,
+        0
+      ],
+      "id": "8400f341-2d3c-451b-810e-c764bf151cc4",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "=WWW",
+        "chatId": "=120363400304673293@newsletter",
+        "reply_to": "=",
+        "text": "={{ $json.output }}",
+        "linkPreview": false,
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        940,
+        -20
+      ],
+      "id": "b850d157-848f-486e-9956-f0b4d731957d",
+      "name": "Broadcast to Channel",
+      "credentials": {
+        "wahaApi": {
+          "id": "WFk1esFjYZkMPMlY",
+          "name": "WAHA Webinar 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Search AI news on Google",
+        "url": "https://serpapi.com/search.json?engine=google&q=ai+news+today&google_domain=google.com&gl=us&hl=en&tbs=qdr%3Ad&tbm=nws&api_key=<your-api-key>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1160,
+        240
+      ],
+      "id": "b4030356-95dd-489e-b1e9-6e28bbdb0af4",
+      "name": "GoogleSearch"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        280,
+        260
+      ],
+      "id": "7d6a1d18-7d8a-48fa-b7d2-d8fed5d17dea",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "kBeobd8DEhCBrUWy",
+          "name": "Webinar 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Broadcast to Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TheDecoder": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TechCrunch": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HttpTool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ThinkTool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Broadcast to Channel": {
+      "main": [
+        []
+      ]
+    },
+    "GoogleSearch": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4d9d8085-f2c5-4174-992f-4b17d6f9f9ce",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fa52a98dd39f67760c7540fff8a0dd5306d89f766551eb7a7c84b5f43eb33d4c"
+  },
+  "id": "xoBW2VAQyNjEdlAb",
+  "tags": []
+}
