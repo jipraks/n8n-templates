@@ -1,0 +1,208 @@
+{
+  "name": "Scrap Mitra10 Website Price",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -576,
+        0
+      ],
+      "id": "01c660c9-b8cb-41c3-8b88-506ee9258d21",
+      "name": "Schedule Every Hour"
+    },
+    {
+      "parameters": {
+        "url": "https://www.mitra10.com/durawood-spc-al8009-dark-maple-box-2-23m2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -336,
+        0
+      ],
+      "id": "d1eeb6ec-04b9-4874-b2fc-83bacb38eee4",
+      "name": "Get Data From Mitra10.com"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "price",
+              "cssSelector": "#maincontent > div.jss62.row > div.jss65.col-xs-12.col-lg-5 > div:nth-child(3) > div.jss71 > div > span"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -112,
+        0
+      ],
+      "id": "6c377b25-0d09-4bea-a410-909bda4a027f",
+      "name": "Extract Price Selector"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "646b1480-2300-4735-aca2-fa2d3af6a897",
+              "name": "price",
+              "value": "={{ $json.price.replaceAll('IDR', '').replaceAll(',','').trim() }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        96,
+        0
+      ],
+      "id": "1886700e-e882-4199-af54-c137db63300a",
+      "name": "Format Price Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a64900f8-d58c-48cb-9cf4-c41b241f2f69",
+              "leftValue": "={{ $json.price }}",
+              "rightValue": 620000,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        0
+      ],
+      "id": "a03e0d41-0187-4b4c-b897-8deaf0bf967e",
+      "name": "If Price < 620.000"
+    },
+    {
+      "parameters": {
+        "chatId": "",
+        "text": "[DURAWOOD DISKOOON!!!] - *ALERTA ALERTA!* BURUAN CHECKOUT",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "73cdebf3-6d1f-4f3e-add6-8b4031c0fd09",
+      "name": "Alerta Alerta ~",
+      "webhookId": "7d2aa238-c42e-4fe7-ab13-f05344ab811e",
+      "credentials": {
+        "telegramApi": {
+          "id": "xTOi4bpooYFQamoA",
+          "name": "Telegram"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Every Hour": {
+      "main": [
+        [
+          {
+            "node": "Get Data From Mitra10.com",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Data From Mitra10.com": {
+      "main": [
+        [
+          {
+            "node": "Extract Price Selector",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Price Selector": {
+      "main": [
+        [
+          {
+            "node": "Format Price Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Price Data": {
+      "main": [
+        [
+          {
+            "node": "If Price < 620.000",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Price < 620.000": {
+      "main": [
+        [
+          {
+            "node": "Alerta Alerta ~",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "29e2cfd0-d2cc-466f-831d-e0127c434937",
+  "meta": {
+    "instanceId": "fa52a98dd39f67760c7540fff8a0dd5306d89f766551eb7a7c84b5f43eb33d4c"
+  },
+  "id": "FLctZ4v3jAHR934X",
+  "tags": []
+}
