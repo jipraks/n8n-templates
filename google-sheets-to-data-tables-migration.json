@@ -1,0 +1,323 @@
+{
+  "name": "Google Sheets to Data Tables Migration",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        0
+      ],
+      "id": "e9a472a3-359a-4bdf-9b7c-6a9b11cc0192",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "<sheet-id>",
+          "mode": "list",
+          "cachedResultName": "Dummy Product",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/<sheet-id>/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2092349693,
+          "mode": "list",
+          "cachedResultName": "products",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/<sheet-id>/edit#gid=2092349693"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -288,
+        0
+      ],
+      "id": "801ecbfd-e4c9-452e-b877-4987e2861866",
+      "name": "Load Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cgLRhzM2dYj1Knm5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5ebab989-cb49-4a16-90d9-2de56d767122",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        0
+      ],
+      "id": "65e911c9-f370-4c90-b3d2-c8b5a3518776",
+      "name": "If Data Exists",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "vEbEXhI8JB4kxuzt",
+          "mode": "list",
+          "cachedResultName": "product",
+          "cachedResultUrl": "/projects/5kFey1Cq96zjpl78/datatables/vEbEXhI8JB4kxuzt"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sheet_row": "={{ $('Loop Over Items').item.json.row_number }}",
+            "nama": "={{ $('Loop Over Items').item.json['A (Nama Produk)'] }}",
+            "jenis": "={{ $('Loop Over Items').item.json['B (Jenis)'] }}",
+            "ukuran": "={{ $('Loop Over Items').item.json['C (Ukuran)'] }}",
+            "warna": "={{ $('Loop Over Items').item.json['D (Warna)'] }}",
+            "harga": "={{ $('Loop Over Items').item.json['E (Harga)'] }}",
+            "stok": "={{ $('Loop Over Items').item.json['F (Stok)'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "sheet_row",
+              "displayName": "sheet_row",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "nama",
+              "displayName": "nama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "jenis",
+              "displayName": "jenis",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ukuran",
+              "displayName": "ukuran",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "warna",
+              "displayName": "warna",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "harga",
+              "displayName": "harga",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "stok",
+              "displayName": "stok",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        768,
+        16
+      ],
+      "id": "0a626329-2434-492f-9525-122f6d3032e0",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "vEbEXhI8JB4kxuzt",
+          "mode": "list",
+          "cachedResultName": "product",
+          "cachedResultUrl": "/projects/5kFey1Cq96zjpl78/datatables/vEbEXhI8JB4kxuzt"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "sheet_row",
+              "keyValue": "={{ $json.row_number }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "5e4183e4-bb3d-4706-b241-0a3af56cd20d",
+      "name": "Check Existing Data",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -80,
+        0
+      ],
+      "id": "d48a309a-cfc4-4a04-a5f8-cefb79605f88",
+      "name": "Loop Over Items"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Load Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Data": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Data Exists": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Existing Data": {
+      "main": [
+        [
+          {
+            "node": "If Data Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Check Existing Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "30afa8a1-39f8-4b6c-a377-a61f5290043e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "da2d061a20f85e542ce3a465c6129145479f757dfdeae5d1d957eacb0fca5601"
+  },
+  "id": "mOh17NyWKG3YgVyz",
+  "tags": []
+}
