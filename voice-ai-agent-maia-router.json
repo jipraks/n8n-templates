@@ -1,0 +1,315 @@
+{
+  "name": "Voice AI Agent x MAIA Router",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "voice-agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -528,
+        -16
+      ],
+      "id": "28f5bc31-9115-486e-b413-82a68e46ae5a",
+      "name": "Webhook",
+      "webhookId": "abdf0324-2716-497b-a380-2870c91531f5"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "binaryPropertyName": "audio",
+        "options": {
+          "language": "id",
+          "temperature": "={{ Math.random() * (0.5 - 0.01) + 0.01 }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        -16
+      ],
+      "id": "be582151-f567-4d1f-bf77-4d609d55f17b",
+      "name": "Transcribe Audio",
+      "credentials": {
+        "openAiApi": {
+          "id": "M59vNQgcWNggRb0D",
+          "name": "MaiaRouter - Audio AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "guardrails": {
+          "jailbreak": {
+            "value": {
+              "threshold": 0.7
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.guardrails",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "9f470aa2-3a80-4075-b4a3-05075f0775bf",
+      "name": "Guardrails"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "openai/gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "openai/gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        240
+      ],
+      "id": "20eb6517-8f64-4e9b-89d3-a72d971fa0e9",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "M59vNQgcWNggRb0D",
+          "name": "MaiaRouter - Audio AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "guardrails",
+        "options": {
+          "systemMessage": "You are a helpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        416,
+        -32
+      ],
+      "id": "ba1a7805-7cdb-4882-b092-f793e5f47904",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.session }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        512,
+        208
+      ],
+      "id": "cdfcfb46-cbcf-4671-b43b-831ef912a60d",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "model": "=openai/gpt-4o-mini-tts",
+        "input": "={{ $json.output }}",
+        "options": {
+          "speed": 1.4
+        },
+        "images": {
+          "values": [
+            {}
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        768,
+        -32
+      ],
+      "id": "fb3bb8b2-b194-410a-bcc4-b39d9ce9bf1c",
+      "name": "Generate audio",
+      "credentials": {
+        "openAiApi": {
+          "id": "M59vNQgcWNggRb0D",
+          "name": "MaiaRouter - Audio AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "responseDataSource": "set",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        976,
+        -32
+      ],
+      "id": "4e1be779-ff7e-4b6e-93f4-760290b1c40d",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.pesenin.my.id",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+            "content-length": "45046",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "accept-language": "en-US,en;q=0.9",
+            "cdn-loop": "cloudflare; loops=1",
+            "cf-connecting-ip": "2001:448a:2040:3612:706d:6b17:9bcf:49aa",
+            "cf-ipcountry": "ID",
+            "cf-ray": "9a2d241b191f797b-SIN",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-warp-tag-id": "28f20de4-c589-4fda-b60c-8a54efee0276",
+            "connection": "keep-alive",
+            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryXMNZGZPedh9Vmp6a",
+            "origin": "https://7e974b0a-482e-4543-8d3d-3ba806634e76.lovableproject.com",
+            "priority": "u=1, i",
+            "referer": "https://7e974b0a-482e-4543-8d3d-3ba806634e76.lovableproject.com/",
+            "sec-ch-ua": "\"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "2001:448a:2040:3612:706d:6b17:9bcf:49aa",
+            "x-forwarded-proto": "https"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "session": "session_1763861839332_b164sjvsp"
+          },
+          "webhookUrl": "https://n8n.pesenin.my.id/webhook/voice-agent",
+          "executionMode": "production"
+        },
+        "binary": {
+          "audio": {
+            "mimeType": "audio/webm",
+            "fileType": "audio",
+            "fileExtension": "weba",
+            "data": "filesystem-v2",
+            "fileName": "recording.webm",
+            "id": "filesystem-v2:workflows/gmh46y2s1yCsEMxr/executions/temp/binary_data/34233224-4efe-4021-8a6e-0f8d28cab304",
+            "fileSize": "44.7 kB"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Transcribe Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe Audio": {
+      "main": [
+        [
+          {
+            "node": "Guardrails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Guardrails",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardrails": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Generate audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate audio": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "652e6126-2598-4d65-807c-b192a42f9760",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fa52a98dd39f67760c7540fff8a0dd5306d89f766551eb7a7c84b5f43eb33d4c"
+  },
+  "id": "gmh46y2s1yCsEMxr",
+  "tags": []
+}
