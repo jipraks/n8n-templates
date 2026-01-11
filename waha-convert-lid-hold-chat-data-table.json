@@ -1,0 +1,817 @@
+{
+  "name": "WAHA LID AND HOLD",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "@devlikeapro/n8n-nodes-waha.wahaTrigger",
+      "typeVersion": 202502,
+      "position": [
+        0,
+        0
+      ],
+      "id": "92fbcbf6-7e19-4683-9b8f-115b3d7daf9b",
+      "name": "WAHA Trigger",
+      "webhookId": "1a7675ec-162f-4b05-9654-136e4e4a78f4"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.payload.from.split('@')[1] }}",
+                    "rightValue": "c.us",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "320c757a-0999-411e-8950-5342b4a2bf00"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "C.US"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6ab35530-cc96-4fa6-b36c-a89469ecd122",
+                    "leftValue": "={{ $json.payload.from.split('@')[1] }}",
+                    "rightValue": "lid",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "LID"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        112
+      ],
+      "id": "eeae69fc-a207-4f3b-9f11-95dfb33e4959",
+      "name": "Switch From"
+    },
+    {
+      "parameters": {
+        "url": "=https://<url-waha>/api/{{ $json.session }}/lids/{{ $json.payload.from }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wahaApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1088,
+        368
+      ],
+      "id": "2d0625f3-9dbc-42f8-987a-18adb978c8b4",
+      "name": "Convert LID",
+      "credentials": {
+        "wahaApi": {
+          "id": "PCXFX9xgfkrRQntA",
+          "name": "WAHA PRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        112
+      ],
+      "id": "23fba00c-b4cd-41f3-bb81-d12331170a00",
+      "name": "Data Forwarder"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d389cd3-58f1-413b-949e-466f181c7b0d",
+              "name": "fromPhone",
+              "value": "={{ $json.payload.from }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1264,
+        96
+      ],
+      "id": "4ce50ba0-f30b-4aba-9905-9cc149d4310d",
+      "name": "Payload Mapper C.US"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d389cd3-58f1-413b-949e-466f181c7b0d",
+              "name": "fromPhone",
+              "value": "={{ $json.pn }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1296,
+        368
+      ],
+      "id": "900e69d1-b794-4f51-9094-bacb6000f40f",
+      "name": "Payload Mapper LID"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1616,
+        112
+      ],
+      "id": "c82706c3-0f2e-419a-aaec-e2f376b8be4d",
+      "name": "Merge From"
+    },
+    {
+      "parameters": {
+        "operation": "rowExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "62XZZWrfKDTQ8KXo",
+          "mode": "list",
+          "cachedResultName": "chatbot_ignore_phone",
+          "cachedResultUrl": "/projects/XjRDWEVSMVwyviNg/datatables/62XZZWrfKDTQ8KXo"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{ $json.fromPhone }}"
+            },
+            {
+              "keyName": "is_ignored",
+              "keyValue": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1856,
+        112
+      ],
+      "id": "31fbcf12-c0ac-47ad-8b59-fdc2d152cccc",
+      "name": "Ignored Phone Data",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d304160e-aff0-4f27-beaa-f73c13ca72cc",
+              "leftValue": "={{ $json.fromPhone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2096,
+        112
+      ],
+      "id": "79f58faf-bafa-4b70-92f0-017cecf0e1d0",
+      "name": "If Phone Ignored"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Data Forwarder').item.json.payload.body }}",
+        "options": {
+          "systemMessage": "Kamu adalah seorang customer cara untuk toko baju bernama JIMS SIGNATURE. Yang kamu ketahui adalah :\n\nAlamat : Jalan Raya Serang Nomor 123, Tangerang, Banten\nBuka Setiap Hari dari Jam 10:00 - 21:00 WIB\nDaftar Produk Bisa dilihat di akun instagram @jims.signature\n\nKalau ada pertanyaan diluar pengetahuanmu atau diluar konteks, gunakan tools IgnoreCustomer dan katakan pada customer bahwa customernya akan di handle oleh tim JIMS SIGNATURE yang lain."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        2736,
+        112
+      ],
+      "id": "2fb5f929-564a-4c0f-882b-f1fc20b27b52",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2672,
+        320
+      ],
+      "id": "156d5e10-6476-4ff5-96e1-a834f810d000",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "PFVf2O14nLB1ouGW",
+          "name": "n8n2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Gunakan tools ini untuk memasukkan pelanggan ke daftar ignore, tool ini digunakan saat kamu sudah tidak sanggup lagi menjawab pertanyaan yang diluar konteks dan pengetahuanmu",
+        "dataTableId": {
+          "__rl": true,
+          "value": "62XZZWrfKDTQ8KXo",
+          "mode": "list",
+          "cachedResultName": "chatbot_ignore_phone",
+          "cachedResultUrl": "/projects/XjRDWEVSMVwyviNg/datatables/62XZZWrfKDTQ8KXo"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "is_ignored": true,
+            "phone": "={{ $('Merge From').item.json.fromPhone }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "is_ignored",
+              "displayName": "is_ignored",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        3168,
+        448
+      ],
+      "id": "231f02dd-a32d-405e-aae7-6d596f71de5d",
+      "name": "IgnoreCustomer"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Merge From').item.json.fromPhone }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2832,
+        320
+      ],
+      "id": "f5e7e030-0eca-43f7-b515-e864b7093d43",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Start Typing",
+        "session": "={{ $('Data Forwarder').item.json.session }}",
+        "chatId": "={{ $('Data Forwarder').item.json.payload.id }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        3136,
+        112
+      ],
+      "id": "efa5a351-98db-4c62-900d-6d2fd61f3801",
+      "name": "Start Typing",
+      "credentials": {
+        "wahaApi": {
+          "id": "PCXFX9xgfkrRQntA",
+          "name": "WAHA PRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3344,
+        112
+      ],
+      "id": "f122c71b-00e9-48dd-bcc6-de22d2b1cdb7",
+      "name": "Wait",
+      "webhookId": "7f950a00-2f93-42c9-a389-02ae3662d0f1"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Seen",
+        "session": "={{ $('Data Forwarder').item.json.session }}",
+        "chatId": "={{ $('Data Forwarder').item.json.payload.from }}",
+        "messageId": "={{ $('Data Forwarder').item.json.payload.id }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        2400,
+        112
+      ],
+      "id": "38c1475f-1413-413d-841e-1533a15c5777",
+      "name": "Send Seen",
+      "credentials": {
+        "wahaApi": {
+          "id": "PCXFX9xgfkrRQntA",
+          "name": "WAHA PRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Stop Typing",
+        "session": "={{ $('Data Forwarder').item.json.session }}",
+        "chatId": "={{ $('Data Forwarder').item.json.payload.id }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        3552,
+        112
+      ],
+      "id": "0b6c12a9-5a89-4e3e-a999-d4ced3e3ddce",
+      "name": "Stop Typing",
+      "credentials": {
+        "wahaApi": {
+          "id": "PCXFX9xgfkrRQntA",
+          "name": "WAHA PRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Data Forwarder').item.json.session }}",
+        "chatId": "={{ $('Merge From').item.json.fromPhone }}",
+        "text": "={{ $('AI Agent').item.json.output }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        3760,
+        112
+      ],
+      "id": "7afba6a0-61d0-4b1b-b770-bbcd57efe8c7",
+      "name": "Send a text message",
+      "credentials": {
+        "wahaApi": {
+          "id": "PCXFX9xgfkrRQntA",
+          "name": "WAHA PRO"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Data Forwarder\nSolusi untuk WAHA Trigger no field. Penjelasannya bisa lihat di https://youtu.be/ydF8VX8PoyU",
+        "height": 496,
+        "width": 336,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        304,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "186097ca-5e7b-4add-8c65-d84aff6606d0",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Switch From\nUntuk switch antara @c.us dengan @lid",
+        "height": 496,
+        "width": 304,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        656,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "a5f2a2a9-7258-4fc7-ad44-83d137a05c9c",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n## Convert @lid ke @c.us\nDokumentasi resmi WAHA : https://waha.devlike.pro/docs/how-to/contacts/#api---lids",
+        "height": 432,
+        "width": 528,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        976,
+        320
+      ],
+      "typeVersion": 1,
+      "id": "318badbb-f142-4cb0-8dff-8eb994e518b7",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Payload Mapper\nKalau sudah @c.us, langsung forward dan tidak perlu di konversi",
+        "height": 496,
+        "width": 528,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        976,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "a193d108-188c-47a2-a7a8-f6d27d1868c8",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Cek Ignored List\nCek apakah nomor telepon ada di daftar ignored atau tidak (pakai data table di n8n). Kalau ada di list dan statusnya true, abaikan pesan.",
+        "height": 496,
+        "width": 528,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1776,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "a714ab66-3c10-4eb2-8eb1-975794621a24",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Send Seen\nSupaya tidak terlihat seperti bot (salah satu cara supaya tidak di ban meta)",
+        "height": 496,
+        "width": 256,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2320,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "c8cddd1f-6a7a-4488-acb2-b33214021f63",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n## Ignore Customer Tool\nTool ini digunakan untuk memasukkan nomor telepon pelanggan ke ignore list, digunakan saat pelanggan bertanya diluar konteks atau AI Agent sudah tidak mampu membalas chat",
+        "height": 496,
+        "width": 384,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3008,
+        288
+      ],
+      "typeVersion": 1,
+      "id": "52ce5629-1e5b-4fde-b344-df10625a0d4d",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Proses Balas Chat\nSebelum balas chat, pakai efek typing supaya tidak terlalu terlihat seperti bot (salah satu cara supaya tidak di ban meta)",
+        "height": 496,
+        "width": 992,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3008,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "44d35e66-4ec8-4041-9ef3-d8b975ef6a4d",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "# Workflow WAHA Untuk Convert @lid + Hold Chat Pakai Data Table\n\nInstagram : https://instagram.com/jipraks\nThreads : https://www.threads.com/@jipraks\nYouTube : https://www.youtube.com/@jipraks\n\nVideo Tutorial Penggunaan Workflow : <youtube-url>",
+        "height": 1120,
+        "width": 704,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -768,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "814f7c15-1663-4788-9f2a-3ed0c6492bad",
+      "name": "Sticky Note8"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WAHA Trigger": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Data Forwarder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch From": {
+      "main": [
+        [
+          {
+            "node": "Payload Mapper C.US",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert LID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Forwarder": {
+      "main": [
+        [
+          {
+            "node": "Switch From",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert LID": {
+      "main": [
+        [
+          {
+            "node": "Payload Mapper LID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payload Mapper C.US": {
+      "main": [
+        [
+          {
+            "node": "Merge From",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payload Mapper LID": {
+      "main": [
+        [
+          {
+            "node": "Merge From",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge From": {
+      "main": [
+        [
+          {
+            "node": "Ignored Phone Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ignored Phone Data": {
+      "main": [
+        [
+          {
+            "node": "If Phone Ignored",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Phone Ignored": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send Seen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IgnoreCustomer": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Start Typing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Typing": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Seen": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Stop Typing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stop Typing": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "eaea1b0f-abdf-4e96-8315-b8ed7a846168",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b62ac38ef50ecab5c5acf5ea705e0557d0173166a4b791b65bb37f5be5eb417d"
+  },
+  "id": "eISEz0neTDrUIXgj",
+  "tags": []
+}
